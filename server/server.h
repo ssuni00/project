@@ -54,5 +54,7 @@ void process_player_command(char command, int player_id, GameInfo *game);
 void send_game_info_to_all_clients(GameInfo *game);
 void *client_handler(void *arg);
 void update_game_state(GameInfo *game);
+void calculate_tile_counts(GameInfo *game, int *red_count, int *blue_count);
+void send_tile_counts(int clnt_sd, int red_count, int blue_count, char winner);
 
 #endif // SERVER_H
