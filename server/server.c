@@ -9,7 +9,6 @@ void send_game_info(int clnt_sd, GameInfo *game)
     write(clnt_sd, &game->player_num, sizeof(game->player_num));
 
     // 보드의 각 행에 대한 정보 전송
-    // clnt는 전체 보드의 상태를 알 수 있음
     for (int i = 0; i < game->height; i++)
     {
         write(clnt_sd, game->board[i], game->width);
@@ -17,22 +16,6 @@ void send_game_info(int clnt_sd, GameInfo *game)
 
     // 모든 플레이어 정보 -> clnt 전송
     write(clnt_sd, game->players, game->player_num * sizeof(Player));
-}
-
-void send_tile_counts(int clnt_sd, int red_count, int blue_count, char winner)
-{
-    if (write(clnt_sd, &red_count, sizeof(red_count)) != sizeof(red_count))
-    {
-        perror("Error sending red_count");
-    }
-    if (write(clnt_sd, &blue_count, sizeof(blue_count)) != sizeof(blue_count))
-    {
-        perror("Error sending blue_count");
-    }
-    if (write(clnt_sd, &winner, sizeof(winner)) != sizeof(winner))
-    {
-        perror("Error sending winner");
-    }
 }
 
 void error_handling(char *message)
@@ -260,7 +243,15 @@ void *client_handler(void *arg)
     else
         winner = 'T'; // Tie
 
+    // 타일 갯수와 승자를 클라이언트에 전송
     send_tile_counts(clnt_sd, red_count, blue_count, winner);
+
+    // 클라이언트로부터 종료 확인 메시지를 기다림
+    numBytes = read(clnt_sd, buffer, sizeof(buffer)); // 클라이언트로부터 종료 메시지 읽기
+    if (numBytes > 0 && buffer[0] == 'q')
+    {
+        printf("Client %d game end.\n", targ->p_num);
+    }
 
     // 게임 종료 후 소켓 닫기
     close(clnt_sd);
@@ -274,6 +265,23 @@ void update_game_state(GameInfo *game)
     game->play_time--;                   // 게임 시간 감소
     send_game_info_to_all_clients(game); // 모든 클라이언트에 게임 상태 전송
     pthread_mutex_unlock(&game->lock);
+}
+
+// 타일 카운트 결과 전송
+void send_tile_counts(int clnt_sd, int red_count, int blue_count, char winner)
+{
+    if (write(clnt_sd, &red_count, sizeof(red_count)) != sizeof(red_count))
+    {
+        error_handling("Error sending red_count");
+    }
+    if (write(clnt_sd, &blue_count, sizeof(blue_count)) != sizeof(blue_count))
+    {
+        error_handling("Error sending blue_count");
+    }
+    if (write(clnt_sd, &winner, sizeof(winner)) != sizeof(winner))
+    {
+        error_handling("Error sending winner");
+    }
 }
 
 // 타일 카운트 계산
@@ -403,7 +411,7 @@ int main(int argc, char *argv[])
     printf("Red tiles: %d\n", red_count);
     printf("Blue tiles: %d\n", blue_count);
 
-    // 스레드 종료 대기
+    // 모든 클라이언트로부터 종료 확인 메시지를 기다림
     for (int i = 0; i < player_num; i++)
     {
         pthread_join(threads[i], NULL);
