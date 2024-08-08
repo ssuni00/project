@@ -166,6 +166,13 @@ void receive_tile_counts(int sock)
     {
         printf("It's a tie!\n");
     }
+
+    // 서버로 종료 확인 메시지 전송
+    char quit = 'q';
+    if (write(sock, &quit, sizeof(quit)) < 0)
+    {
+        error_handling("Error sending quit message");
+    }
 }
 
 // 게임 정보 업데이트 스레드 함수
