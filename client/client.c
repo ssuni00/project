@@ -187,8 +187,9 @@ void *update_game_info_thread(void *arg)
             error_handling("Error receiving updated game info");
 
         // 게임 보드 출력
-        print_board(&game, player_id); // 전역 변수 player_id 사용
-        usleep(100000);                // 100ms 동안 대기
+        print_board(&game, player_id);
+        // 100ms 동안 대기 -> 루프가 너무 빨리 도는것 방지
+        usleep(100000);
     }
 
     return NULL;
@@ -267,7 +268,7 @@ int main(int argc, char *argv[])
     while ((ch = getchar()) != 'y')
         ;
 
-    // 연결 확인 메시지를 서버로 전송
+    // 연결 확인 메시지 -> 서버로 전송
     if (write(sock, &ch, sizeof(ch)) < 0)
         error_handling("Error sending confirmation");
 
@@ -275,7 +276,7 @@ int main(int argc, char *argv[])
     if (read(sock, &player_id, sizeof(player_id)) <= 0)
         error_handling("Error receiving player ID");
 
-    // 서버로부터 초기 게임 정보를 수신
+    // from 서버 -> 초기 게임 정보 수신
     if (receive_game_info(sock, &game) < 0)
         error_handling("Error receiving game info");
 
@@ -291,13 +292,13 @@ int main(int argc, char *argv[])
 
     pthread_t update_thread, input_thread;
 
-    // 게임 정보 업데이트를 위한 스레드 생성
+    // 게임 정보 업데이트를 위한 스레드
     if (pthread_create(&update_thread, NULL, update_game_info_thread, &sock) != 0)
     {
         error_handling("Error creating update thread");
     }
 
-    // 게임 루프를 위한 스레드 생성
+    // 게임 루프를 위한 스레드
     if (pthread_create(&input_thread, NULL, game_loop, &sock) != 0)
     {
         error_handling("Error creating input thread");
