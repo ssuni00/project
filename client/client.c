@@ -1,8 +1,8 @@
 #include "client.h"
 
-GameInfo game; // 전역 변수로 선언
+GameInfo game;
 pthread_mutex_t game_lock = PTHREAD_MUTEX_INITIALIZER;
-int player_id; // 전역 변수로 플레이어 ID 선언
+int player_id;
 
 void error_handling(char *message)
 {
@@ -194,7 +194,7 @@ void *update_game_info_thread(void *arg)
     return NULL;
 }
 
-// 게임 루프를 실행하여 플레이어의 입력을 처리하고 서버와 통신하는 함수
+// 게임 루프를 실행 -> 플레이어의 입력 처리 & 서버와 통신
 void *game_loop(void *arg)
 {
     int sock = *(int *)arg;
