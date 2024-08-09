@@ -1,6 +1,6 @@
 # Final Project
 
-##사용법
+## 사용법
 
 - ./server -n 플레이어인원 -s 보드크기 -b 판갯수 -t 플레이시간 -p 포트번호
   - <img width="310" alt="image" src="https://github.com/user-attachments/assets/41e2aa55-715a-4bb7-96d0-93434c664e74">
